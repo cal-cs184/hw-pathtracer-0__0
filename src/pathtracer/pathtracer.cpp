@@ -3,6 +3,7 @@
 #include "scene/light.h"
 #include "scene/sphere.h"
 #include "scene/triangle.h"
+#include <iostream>
 
 
 using namespace CGL::SceneObjects;
@@ -181,13 +182,20 @@ void PathTracer::raytrace_pixel(size_t x, size_t y) {
   // TODO (Part 5):
   // Modify your implementation to include adaptive sampling.
   // Use the command line parameters "samplesPerBatch" and "maxTolerance"
-  int num_samples = ns_aa;          // total samples to evaluate
-  Vector2D origin = Vector2D(x, y); // bottom left corner of the pixel
+  Vector3D L_total(0, 0, 0);
 
+  for(int i = 0; i<ns_aa; i++){
+    Vector2D sample = gridSampler->get_sample();
+    Ray r = camera->generate_ray(((x + sample.x)/sampleBuffer.w) - .5,
+                                 ((y + sample.y)/sampleBuffer.h)- .5); //ray r from camera
+    Vector3D L = est_radiance_global_illumination(r);  //estimate radiance from r
+    L_total += L;
+  }
+  sampleBuffer.update_pixel(L_total/ns_aa, x, y); //update sample buffer with radiance, x, y
+  sampleCountBuffer[x  + y * sampleBuffer.w] += ns_aa; //increment sample count for pixel
 
-  sampleBuffer.update_pixel(Vector3D(0.2, 1.0, 0.8), x, y);
-  sampleCountBuffer[x + y * sampleBuffer.w] = num_samples;
-
+  //sampleBuffer.update_pixel(Vector3D(0.2, 1.0, 0.8), x, y);
+  //sampleCountBuffer[x + y * sampleBuffer.w] = num_samples;
 
 }
 
