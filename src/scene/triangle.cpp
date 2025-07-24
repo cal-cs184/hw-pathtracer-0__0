@@ -29,6 +29,8 @@ bool Triangle::has_intersection(const Ray &r) const {
   // function records the "intersection" while this function only tests whether
   // there is a intersection.
 
+  // Algorithim Derived from Wikipedia: https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+
   Vector3D e1 = p2 - p1;
   Vector3D e2 = p3 - p1;
   Vector3D ray_cross_e2 = cross(r.d, e2);
