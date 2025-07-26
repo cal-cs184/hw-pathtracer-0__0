@@ -33,8 +33,10 @@ bool Triangle::has_intersection(const Ray &r) const {
 
   Vector3D e1 = p2 - p1;
   Vector3D e2 = p3 - p1;
+
   Vector3D ray_cross_e2 = cross(r.d, e2);
   double det = dot(e1, ray_cross_e2);
+
   if (det < 1e-6 && det > -1e-6) {
     return false; // Ray is parallel to the triangle
   }
