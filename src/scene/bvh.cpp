@@ -58,6 +58,7 @@ BVHNode *BVHAccel::construct_bvh(std::vector<Primitive *>::iterator start,
   // single leaf node (which is also the root) that encloses all the
   // primitives.
 
+  
 
   BBox bbox;
 
@@ -69,6 +70,45 @@ BVHNode *BVHAccel::construct_bvh(std::vector<Primitive *>::iterator start,
   BVHNode *node = new BVHNode(bbox);
   node->start = start;
   node->end = end;
+
+  size_t num = end - start;
+  if (num <= max_leaf_size) {
+    // If the number of primitives is less than or equal to the maximum
+    // leaf size, we create a leaf node.
+    node->l = nullptr;
+    node->r = nullptr;
+    return node;
+  }
+
+  BBox centroid_bounds;
+  for (auto i = start; i != end; i++) {
+    Vector3D c = (*i)->get_bbox().centroid();
+    centroid_bounds.expand(c);  
+  }
+
+  double x_len = centroid_bounds.max.x - centroid_bounds.min.x;
+  double y_len = centroid_bounds.max.y - centroid_bounds.min.y;
+  double z_len = centroid_bounds.max.z - centroid_bounds.min.z;
+
+  int axis = 0;
+  if (y_len > x_len && y_len > z_len) {
+    axis = 1; // Y-axis
+  } else if (z_len > x_len && z_len > y_len) {
+    axis = 2; // Z-axis
+  } // else axis remains 0 (X-axis)
+
+  double mid = (centroid_bounds.max[axis] + centroid_bounds.min[axis]) / 2.0;
+
+  std::vector<Primitive *> left_primitives;
+  std::vector<Primitive *> right_primitives;
+
+  for (auto i = start; i != end; i++) {
+    double center = (*i)->get_bbox().centroid()[axis];
+    if (center <= mid) left_primitives.push_back(*i);
+    else right_primitives.push_back(*i);
+  }
+
+
 
   return node;
 
